@@ -16,6 +16,9 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigInfo;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
 
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DatabaseReference;
+
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
@@ -39,6 +42,7 @@ public class FirebasePlugin extends CordovaPlugin {
 
     private FirebaseAnalytics mFirebaseAnalytics;
     private final String TAG = "FirebasePlugin";
+    private DatabaseReference mDatabaseRef;
     protected static final String KEY = "badge";
     protected static Bundle notificationBundle;
 
@@ -115,6 +119,9 @@ public class FirebasePlugin extends CordovaPlugin {
             if (args.length() > 1)
                 this.setDefaults(callbackContext, args.getJSONObject(0), args.getString(1));
             else this.setDefaults(callbackContext, args.getJSONObject(0), null);
+            return true;
+        } else if (action.equals("setDatabasePersistent")) {
+            this.setDatabasePersistent(callbackContext, args.getBoolean(0));
             return true;
         }
         return false;
@@ -423,5 +430,18 @@ public class FirebasePlugin extends CordovaPlugin {
             map.put(key, value);
         }
         return map;
+    }
+
+    private void setDatabasePersistent(final CallbackContext callbackContext, final boolean persistent) {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    FirebaseDatabase.getInstance().setPersistenceEnabled(persistent);
+                    callbackContext.success();
+                } catch (Exception ex) {
+                    callbackContext.error(ex.getMessage());
+                }
+            }
+        });
     }
 }

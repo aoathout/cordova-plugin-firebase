@@ -68,6 +68,9 @@ if (directoryExists("platforms/android")) {
         // strip non-default value
         strings = strings.replace(new RegExp('<string name="google_api_key">([^\@<]+?)</string>', "i"), '')
 
+        // strip non-default value
+        strings = strings.replace(new RegExp('<string name="firebase_database_url">([^\@<]+?)</string>', "i"), '')
+
         // strip empty lines
         strings = strings.replace(new RegExp('(\r\n|\n|\r)[ \t]*(\r\n|\n|\r)', "gm"), '$1')
 
@@ -77,7 +80,11 @@ if (directoryExists("platforms/android")) {
         // replace the default value
         strings = strings.replace(new RegExp('<string name="google_api_key">([^<]+?)</string>', "i"), '<string name="google_api_key">' + json.client[0].api_key[0].current_key + '</string>')
 
-        fs.writeFileSync("platforms/android/res/values/strings.xml", strings);
+        // replace the default value
+        strings = strings.replace(new RegExp('<string name="firebase_database_url">([^<]+?)</string>', "i"), '<string name="firebase_database_url" translatable="false">' + json.project_info.firebase_url + '</string>')
+
+
+          fs.writeFileSync("platforms/android/res/values/strings.xml", strings);
       } catch(err) {
         process.stdout.write(err);
       }

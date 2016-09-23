@@ -21,5 +21,6 @@
 @property (nonatomic, copy) NSString *notificationCallbackId;
 @property (nonatomic, copy) NSString *tokenRefreshCallbackId;
 @property (nonatomic, retain) NSMutableArray *notificationStack;
+@property (strong, nonatomic) FIRDatabaseReference *databaseRef;
 
 @end

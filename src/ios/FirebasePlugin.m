@@ -15,6 +15,7 @@
 @synthesize notificationCallbackId;
 @synthesize tokenRefreshCallbackId;
 @synthesize notificationStack;
+@synthesize databaseRef;
 
 static NSInteger const kNotificationStackSize = 10;
 static FirebasePlugin *firebasePlugin;
