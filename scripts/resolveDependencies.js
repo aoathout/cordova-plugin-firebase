@@ -17,8 +17,7 @@
     var sourcePackageJson,
         targetPackageJson,
         tempPackageJson,
-        hooksPath,
-        logger;
+        hooksPath;
 
     /*********************
      * File utilities
@@ -63,12 +62,12 @@
 
     // Install modules via npm CLI
     function installModules(cb) {
-        logger.log("Installing plugin dependencies...");
+        console.log("Installing plugin dependencies...");
 
         var cmd = 'npm install';
-        logger.verbose("Running " + cmd);
+        console.log("Running " + cmd);
         exec(cmd, function (err, stdout, stderr) {
-            logger.verbose("Completed " + cmd);
+            console.log("Completed " + cmd);
             cb(err);
         });
     }
@@ -77,13 +76,13 @@
     function checkForRealPackageJson(){
         fileExists(targetPackageJson, function (exists) {
             if (exists) {
-                logger.verbose("package.json already exists");
+                console.log("package.json already exists");
                 copyFile(targetPackageJson, tempPackageJson, function (err) {
                     if (err) {
                         deferral.reject("Error copying package.json to package.json.tmp: " + err);
                         return -1;
                     }
-                    logger.verbose("Copied existing package.json to package.json.tmp");
+                    console.log("Copied existing package.json to package.json.tmp");
                     deployPluginPackageJson();
                 });
             } else {
@@ -94,43 +93,43 @@
 
     // Dependency resolution is complete
     function complete() {
-        logger.verbose("Dependency resolution complete");
+        console.log("Dependency resolution complete");
         deferral.resolve();
     }
 
 
     // Deploy our plugin's package.json and execute npm install
     function deployPluginPackageJson() {
-        logger.verbose("Copying package.json");
+        console.log("Copying package.json");
         copyFile(sourcePackageJson, targetPackageJson, function (err) {
             if (err) {
                 deferral.reject("Error copying plugin's package.json: " + err);
                 return -1;
             }
-            logger.verbose("Copied package.json");
+            console.log("Copied package.json");
             installModules(function(err) {
                 if (err) {
                     deferral.reject("Error installing modules: " + err);
                     return -1;
                 }
-                logger.verbose("Installed modules");
+                console.log("Installed modules");
                 fileExists(tempPackageJson, function (exists) {
                     if (exists) {
-                        logger.verbose("package.json.tmp exists");
+                        console.log("package.json.tmp exists");
                         copyFile(tempPackageJson, targetPackageJson, function (err) {
                             if (err) {
                                 deferral.reject("Error restoring package.json.tmp to package.json: " + err);
                                 return -1;
                             }
-                            logger.verbose("Overwrote our package.json with original package.json.tmp");
+                            console.log("Overwrote our package.json with original package.json.tmp");
 
-                            logger.verbose("Removing package.json.tmp");
+                            console.log("Removing package.json.tmp");
                             deleteFile(tempPackageJson, function (err) {
                                 if (err) {
                                     deferral.reject("Error removing package.json.tmp: " + err);
                                     return -1;
                                 }
-                                logger.verbose("Removed package.json.tmp");
+                                console.log("Removed package.json.tmp");
                                 complete();
                             })
                         });
@@ -140,7 +139,7 @@
                                 deferral.reject("Error removing our package.json: " + err);
                                 return -1;
                             }
-                            logger.verbose("Removed our package.json");
+                            console.log("Removed our package.json");
                             complete();
                         })
                     }
@@ -159,7 +158,6 @@
 
         // resolve paths
         hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
-        logger = require(path.resolve(hooksPath, "logger.js"))(ctx),
             sourcePackageJson = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "package.json"),
             targetPackageJson = path.resolve(ctx.opts.projectRoot, "package.json"),
             tempPackageJson = path.resolve(ctx.opts.projectRoot, "package.json.tmp");
