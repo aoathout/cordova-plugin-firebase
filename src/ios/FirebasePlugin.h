@@ -1,5 +1,6 @@
 #import <Cordova/CDV.h>
 #import "AppDelegate.h"
+@import FirebaseDatabase;
 
 @interface FirebasePlugin : CDVPlugin
 + (FirebasePlugin *) firebasePlugin;
@@ -16,11 +17,12 @@
 - (void)logEvent:(CDVInvokedUrlCommand*)command;
 - (void)setUserId:(CDVInvokedUrlCommand*)command;
 - (void)setUserProperty:(CDVInvokedUrlCommand*)command;
-- (void)setDatabasePersistent:(CDVInvokedUrlCommand*)command;
+- (void)openDatabase:(CDVInvokedUrlCommand*)command;
+- (void)getDataFromPath:(CDVInvokedUrlCommand*)command;
 
 @property (nonatomic, copy) NSString *notificationCallbackId;
 @property (nonatomic, copy) NSString *tokenRefreshCallbackId;
 @property (nonatomic, retain) NSMutableArray *notificationStack;
-@property (strong, nonatomic) FIRDatabaseReference *databaseRef;
+@property (nonatomic, retain) FIRDatabaseReference *databaseRef;
 
 @end

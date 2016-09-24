@@ -96,18 +96,18 @@ static FirebasePlugin *firebasePlugin;
 
 - (void)subscribe:(CDVInvokedUrlCommand *)command {
     NSString* topic = [NSString stringWithFormat:@"/topics/%@", [command.arguments objectAtIndex:0]];
-    
+
     [[FIRMessaging messaging] subscribeToTopic: topic];
-    
+
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)unsubscribe:(CDVInvokedUrlCommand *)command {
     NSString* topic = [NSString stringWithFormat:@"/topics/%@", [command.arguments objectAtIndex:0]];
-    
+
     [[FIRMessaging messaging] unsubscribeFromTopic: topic];
-    
+
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -140,7 +140,7 @@ static FirebasePlugin *firebasePlugin;
         if (!self.notificationStack) {
             self.notificationStack = [[NSMutableArray alloc] init];
         }
-        
+
         // stack notifications until a callback has been registered
         [self.notificationStack addObject:userInfo];
 
@@ -161,9 +161,9 @@ static FirebasePlugin *firebasePlugin;
     [self.commandDelegate runInBackground:^{
         NSString* name = [command.arguments objectAtIndex:0];
         NSDictionary* parameters = [command.arguments objectAtIndex:1];
-        
+
         [FIRAnalytics logEventWithName:name parameters:parameters];
-        
+
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
@@ -172,9 +172,9 @@ static FirebasePlugin *firebasePlugin;
 - (void)setUserId:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         NSString* id = [command.arguments objectAtIndex:0];
-        
+
         [FIRAnalytics setUserID:id];
-        
+
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
@@ -184,9 +184,9 @@ static FirebasePlugin *firebasePlugin;
     [self.commandDelegate runInBackground:^{
         NSString* name = [command.arguments objectAtIndex:0];
         NSString* value = [command.arguments objectAtIndex:1];
-        
+
         [FIRAnalytics setUserPropertyString:value forName:name];
-        
+
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
@@ -197,7 +197,45 @@ static FirebasePlugin *firebasePlugin;
         BOOL persistent = [command.arguments objectAtIndex:0];
 
         [FIRDatabase database].persistenceEnabled = persistent;
+
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
 
+- (void)openDatabase:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        [FIRDatabase database].persistenceEnabled = YES;
+
+        self.databaseRef = [[FIRDatabase database] reference];
+        [self.databaseRef keepSynced:YES];
+
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+
+
+- (void)getDataFromPath:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        NSDictionary *options = [command.arguments objectAtIndex:0];
+        NSString *path = [options objectForKey:@"path"];
+
+        FIRDatabaseReference *pathRef = [self.databaseRef child:path];
+        [pathRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+            [self sendDataPathEventData:command key:path data:snapshot.value];
+        }];
+    }];
+}
+
+- (void)sendDataPathEventData:(CDVInvokedUrlCommand *)command key:(NSString *)key data:(FIRDataSnapshot *)data {
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    [result setObject:key forKey:@"KEY"];
+    [result setObject:data forKey:@"DATA"];
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
 @end

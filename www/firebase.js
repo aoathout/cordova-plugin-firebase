@@ -100,6 +100,10 @@ exports.setDefaults = function (defaults, namespace, success, error) {
     exec(success, error, "FirebasePlugin", "setDefaults", args);
 };
 
-exports.setDatabasePersistent = function(persistent, success, error) {
-    exec(success, error, "FirebasePlugin", "setDatabasePersistent", [persistent]);
+exports.openDatabase = function(success, error) {
+    exec(success, error, "FirebasePlugin", "openDatabase", []);
+};
+
+exports.getDataFromPath = function(options, success, error) {
+    exec(success, error, "FirebasePlugin", "getDataFromPath", [options]);
 };
